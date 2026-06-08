@@ -1,0 +1,17 @@
+{
+  "name": "redis-nik",
+  "version": "1.0.0",
+  "description": "Redis Nik",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "ioredis": "^5.8.1",
+    "mongoose": "^8.18.0"
+  }
+}
