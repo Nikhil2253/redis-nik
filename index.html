@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Redis Leaderboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #ffffff;
+            color: #111;
+            margin: 0;
+            padding: 30px;
+        }
+
+        h1,
+        h2 {
+            font-weight: 600;
+        }
+
+        button {
+            padding: 10px 14px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #f2f2f2;
+        }
+
+        #users {
+            margin: 20px 0;
+        }
+
+        #board {
+            list-style: none;
+            padding: 0;
+            max-width: 420px;
+        }
+
+        #board li {
+            padding: 12px 14px;
+            margin: 8px 0;
+            border-radius: 8px;
+            background: #fafafa;
+            border: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+
+        #board li:hover {
+            transform: translateX(4px);
+            background: #f6f6f6;
+        }
+
+        .rank {
+            font-weight: 600;
+        }
+
+        .score {
+            font-weight: 600;
+        }
+
+        #board .gold {
+            background: linear-gradient(90deg, #fff8dc, #ffd700);
+            border: 1px solid #e6c200;
+            font-weight: bold;
+        }
+
+        #board .silver {
+            background: linear-gradient(90deg, #f5f5f5, #c0c0c0);
+            border: 1px solid #a9a9a9;
+            font-weight: bold;
+        }
+
+        #board .bronze {
+            background: linear-gradient(90deg, #f3e5ab, #cd7f32);
+            border: 1px solid #a66a2c;
+            font-weight: bold;
+        }
+
+        #board .user {
+            background: linear-gradient(90deg, #ffffff, #f4f7ff);
+            border: 1px solid #e6eaf5;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🏆 Leaderboard</h1>
+
+    <button onclick="loadData()">Refresh</button>
+
+    <div id="users"></div>
+
+    <h2>Ranking</h2>
+    <ul id="board"></ul>
+
+    <script>
+        const users = Array.from({ length: 10 }, (_, i) => i + 1);
+
+        async function addScore(userId) {
+            await fetch("http://localhost:3000/score", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userId: String(userId),
+                    score: 100
+                })
+            });
+
+            loadData();
+        }
+
+        async function loadData() {
+            const res = await fetch("http://localhost:3000/leaderboard");
+            const data = await res.json();
+
+            const board = document.getElementById("board");
+            board.innerHTML = "";
+
+            data.data.forEach((user, index) => {
+                const li = document.createElement("li");
+
+                if (index === 0) li.classList.add("gold");
+                else if (index === 1) li.classList.add("silver");
+                else if (index === 2) li.classList.add("bronze");
+                else li.classList.add("user");
+
+                let badge = "";
+                if (index === 0) badge = " 🥇";
+                else if (index === 1) badge = " 🥈";
+                else if (index === 2) badge = " 🥉";
+
+                li.innerHTML = `
+                    <span class="rank">#${index + 1} User ${user.userId}${badge}</span>
+                    <span class="score">${user.score}</span>
+                `;
+
+                board.appendChild(li);
+            });
+        }
+
+        function renderUsers() {
+            const container = document.getElementById("users");
+
+            users.forEach(userId => {
+                const btn = document.createElement("button");
+                btn.innerText = `User ${userId} +100`;
+                btn.onclick = () => addScore(userId);
+                container.appendChild(btn);
+            });
+        }
+
+        renderUsers();
+        loadData();
+        setInterval(loadData, 5000);
+    </script>
+</body>
+
+</html>
